@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仙弈争锋 - 修仙棋类游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'STHeiti', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e0e0ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ffd700, #ff8c00, #ff4500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #a0a0ff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(160, 160, 255, 0.3);
+        }
+        
+        .game-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 100, 200, 0.3);
+        }
+        
+        .board-container {
+            position: relative;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        canvas {
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 50, 0.8);
+        }
+        
+        .info-panel {
+            width: 320px;
+            background: rgba(30, 30, 60, 0.9);
+            padding: 20px;
+            border-left: 1px solid rgba(100, 100, 150, 0.3);
+            overflow-y: auto;
+            max-height: 800px;
+        }
+        
+        .panel-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(100, 100, 150, 0.3);
+        }
+        
+        .panel-title {
+            color: #ffd700;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(40, 40, 80, 0.6);
+        }
+        
+        .player-1 { border-left: 4px solid #4682b4; }
+        .player-2 { border-left: 4px solid #dc143c; }
+        
+        .player-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .player-1 .player-name { color: #4682b4; }
+        .player-2 .player-name { color: #dc143c; }
+        
+        .player-stats {
+            text-align: right;
+        }
+        
+        .stat {
+            margin-bottom: 5px;
+        }
+        
+        .selected-piece {
+            background: rgba(60, 60, 100, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .piece-details {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .piece-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        .piece-info {
+            flex: 1;
+        }
+        
+        .piece-name {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .piece-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #4a6fa5, #2e4a7a);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, #5a8fc5, #3e5a9a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .technique {
+            background: linear-gradient(to bottom, #7a4a9c, #5a2e7a);
+        }
+        
+        .end-turn {
+            background: linear-gradient(to bottom, #4a9c7a, #2e7a5a);
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .rules {
+            line-height: 1.6;
+        }
+        
+        .rule-item {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .rule-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+        
+        .victory-conditions {
+            background: rgba(40, 80, 60, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #8080c0;
+            font-size: 0.9rem;
+            padding: 20px;
+            max-width: 1200px;
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (max-width: 900px) {
+            .game-container {
+                flex-direction: column;
+            }
+            
+            .info-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(100, 100, 150, 0.3);
+            }
+            
+            canvas {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>仙弈争锋</h1>
+        <div class="subtitle">修仙棋类策略游戏 - 以天地为盘，以仙道为弈</div>
+    </header>
+    
+    <div class="game-container">
+        <div class="board-container">
+            <canvas id="gameCanvas" width="700" height="700"></canvas>
+        </div>
+        
+        <div class="info-panel">
+            <div class="panel-section">
+                <h2 class="panel-title">对弈状态</h2>
+                <div class="player-info player-1">
+                    <div>
+                        <div class="player-name">玩家一 · 青云宗</div>
+                        <div>境界: 元婴期</div>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat">灵能: <span class="stat-value" id="player1-energy">12</span></div>
+                        <div class="stat">灵脉: <span class="stat-value" id="player1-nodes">3/8</span></div>
+                        <div class="stat">回合: <span class="stat-value" id="turn-count">1</span></div>
+                    </div>
+                </div>
+                
+                <div class="player-info player-2">
+                    <div>
+                        <div class="player-name">玩家二 · 血煞门</div>
+                        <div>境界: 金丹期</div>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat">灵能: <span class="stat-value" id="player2-energy">8</span></div>
+                        <div class="stat">灵脉: <span class="stat-value" id="player2-nodes">4/8</span></div>
+                        <div class="stat">状态: <span class="stat-value" id="player2-state">等待中</span></div>
+                    </div>
+                </div>
+                
+                <div class="selected-piece">
+                    <div class="piece-details">
+                        <div class="piece-icon" id="piece-icon" style="background: #4682b4;">长</div>
+                        <div class="piece-info">
+                            <div class="piece-name" id="piece-name">长老 · 元婴期</div>
+                            <div class="piece-stats">
+                                <div>战力: <span class="stat-value" id="piece-power">23</span></div>
+                                <div>生命: <span class="stat-value" id="piece-health">85/120</span></div>
+                                <div>五行: <span class="stat-value" id="piece-element">火</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>位置: <span id="piece-position">(4, 5)</span></div>
+                </div>
+                
+                <div class="controls">
+                    <button class="technique" id="tech1">缩地成寸 (消耗3灵能)</button>
+                    <button class="technique" id="tech2">元神出窍 (消耗5灵能)</button>
+                    <button class="technique" id="tech3">天魔解体 (消耗1灵能)</button>
+                    <button class="end-turn" id="end-turn">结束当前回合</button>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h2 class="panel-title">游戏规则</h2>
+                <div class="rules">
+                    <div class="rule-item">移动棋子攻击敌人，利用五行相克关系</div>
+                    <div class="rule-item">在五行灵域上停留3回合可提升境界</div>
+                    <div class="rule-item">占领灵脉节点获取灵能，用于施展秘术</div>
+                    <div class="rule-item">合理使用阵法组合增强棋子能力</div>
+                    <div class="rule-item">每回合只能移动一次，结束后需结束回合</div>
+                    
+                    <div class="victory-conditions">
+                        <h3>胜利条件:</h3>
+                        <div class="rule-item">击杀对方掌门（斩首）</div>
+                        <div class="rule-item">掌门在太极区连续修炼5回合（飞升）</div>
+                        <div class="rule-item">控制5个以上灵脉节点（夺脉）</div>
+                        <div class="rule-item">使敌方全员降为炼气期（道统）</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <footer>
+        <p>仙弈争锋 · 修仙棋类游戏 | 感悟天道，运筹帷幄，决胜九霄！</p>
+        <p>© 2023 九天仙游阁 版权所有</p>
+    </footer>
+
+    <script>
+        // 游戏主逻辑
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const messageElement = document.getElementById('message');
+        
+        // 游戏常量
+        const BOARD_SIZE = 9;
+        const CELL_SIZE = Math.min(canvas.width, canvas.height) * 0.9 / BOARD_SIZE;
+        const BOARD_PADDING_X = (canvas.width - CELL_SIZE * BOARD_SIZE) / 2;
+        const BOARD_PADDING_Y = (canvas.height - CELL_SIZE * BOARD_SIZE) / 2;
+        
+        // 颜色定义
+        const COLORS = {
+            BACKGROUND: '#0a0a1e',
+            GRID: 'rgba(100, 100, 150, 0.6)',
+            PLAYER1: '#4682b4',
+            PLAYER2: '#dc143c',
+            HIGHLIGHT: 'rgba(255, 215, 0, 0.5)',
+            VALID_MOVE: 'rgba(100, 255, 100, 0.4)',
+            ATTACK_MOVE: 'rgba(255, 100, 100, 0.6)',
+            GOLD: 'rgba(255, 215, 0, 0.7)',
+            WOOD: 'rgba(50, 180, 50, 0.7)',
+            WATER: 'rgba(65, 150, 225, 0.7)',
+            FIRE: 'rgba(220, 60, 60, 0.7)',
+            EARTH: 'rgba(160, 120, 60, 0.7)',
+            TAIJI: 'rgba(220, 220, 220, 0.7)',
+            NODE: 'rgba(180, 180, 230, 0.7)'
+        };
+        
+        // 五行区域类型
+        const AreaType = {
+            NORMAL: 0,
+            GOLD: 1,
+            WOOD: 2,
+            WATER: 3,
+            FIRE: 4,
+            EARTH: 5,
+            TAIJI: 6,
+            NODE: 7
+        };
+        
+        // 棋子类型
+        const PieceType = {
+            OUTER_DISCIPLE: 0,
+            INNER_DISCIPLE: 1,
+            TRUE_DISCIPLE: 2,
+            ELDER: 3,
+            LEADER: 4
+        };
+        
+        // 棋子符号
+        const PIECE_SYMBOLS = {
+            [PieceType.OUTER_DISCIPLE]: '外',
+            [PieceType.INNER_DISCIPLE]: '内',
+            [PieceType.TRUE_DISCIPLE]: '真',
+            [PieceType.ELDER]: '长',
+            [PieceType.LEADER]: '掌'
+        };
+        
+        // 棋子名称
+        const PIECE_NAMES = {
+            [PieceType.OUTER_DISCIPLE]: '外门弟子',
+            [PieceType.INNER_DISCIPLE]: '内门弟子',
+            [PieceType.TRUE_DISCIPLE]: '真传弟子',
+            [PieceType.ELDER]: '长老',
+            [PieceType.LEADER]: '掌门'
+        };
+        
+        // 修仙境界
+        const CULTIVATION_LEVELS = ["炼气", "筑基", "金丹", "元婴", "大乘"];
+        
+        // 五行相克关系
+        const ELEMENT_CYCLE = {
+            '金': '木',
+            '木': '土',
+            '土': '水',
+            '水': '火',
+            '火': '金'
+        };
+        
+        // 游戏状态
+        let gameState = {
+            areas: [],
+            pieces: [],
+            selectedPiece: null,
+            validMoves: [],
+            currentPlayer: 1,
+            spiritEnergy: {1: 0, 2: 0},
+            controlledNodes: {1: 0, 2: 0},
+            turnCount: 1,
+            playerMoved: false,
+            gameOver: false,
+            winner: null
+        };
+        
+        // 显示消息
+        function showMessage(text, duration = 2000) {
+            messageElement.textContent = text;
+            messageElement.style.display = 'block';
+            
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, duration);
+        }
+        
+        // 更新信息面板
+        function updateInfoPanel() {
+            document.getElementById('player1-energy').textContent = gameState.spiritEnergy[1];
+            document.getElementById('player2-energy').textContent = gameState.spiritEnergy[2];
+            document.getElementById('player1-nodes').textContent = `${gameState.controlledNodes[1]}/8`;
+            document.getElementById('player2-nodes').textContent = `${gameState.controlledNodes[2]}/8`;
+            document.getElementById('turn-count').textContent = gameState.turnCount;
+            
+            if (gameState.currentPlayer === 1) {
+                document.querySelector('.player-1 .player-name').textContent = '玩家一 · 青云宗 (行动中)';
+                document.querySelector('.player-2 .player-name').textContent = '玩家二 · 血煞门';
+                document.getElementById('player2-state').textContent = '等待中';
+            } else {
+                document.querySelector('.player-1 .player-name').textContent = '玩家一 · 青云宗';
+                document.querySelector('.player-2 .player-name').textContent = '玩家二 · 血煞门 (行动中)';
+                document.getElementById('player2-state').textContent = '行动中';
+            }
+            
+            if (gameState.selectedPiece) {
+                const piece = gameState.selectedPiece;
+                const power = getPiecePower(piece);
+                const maxHealth = getPieceMaxHealth(piece);
+                
+                document.getElementById('piece-icon').textContent = PIECE_SYMBOLS[piece.type];
+                document.getElementById('piece-icon').style.background = piece.player === 1 ? COLORS.PLAYER1 : COLORS.PLAYER2;
+                document.getElementById('piece-name').textContent = `${PIECE_NAMES[piece.type]} · ${CULTIVATION_LEVELS[piece.level]}`;
+                document.getElementById('piece-power').textContent = power;
+                document.getElementById('piece-health').textContent = `${piece.health}/${maxHealth}`;
+                document.getElementById('piece-element').textContent = piece.attribute;
+                document.getElementById('piece-position').textContent = `(${piece.x}, ${piece.y})`;
+                
+                document.querySelector('.selected-piece').style.display = 'block';
+            } else {
+                document.querySelector('.selected-piece').style.display = 'none';
+            }
+        }
+        
+        // 生成棋盘区域
+        function generateBoardAreas() {
+            const areas = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(AreaType.NORMAL));
+            
+            // 设置太极区
+            const center = Math.floor(BOARD_SIZE / 2);
+            areas[center][center] = AreaType.TAIJI;
+            
+            // 设置灵脉节点
+            const nodes = [
+                [2, 2], [2, 6], [6, 2], [6, 6],
+                [2, 4], [4, 2], [4, 6], [6, 4]
+            ];
+            nodes.forEach(([x, y]) => {
+                areas[x][y] = AreaType.NODE;
+            });
+            
+            // 设置五行灵域
+            const elements = ['金', '木', '水', '火', '土'];
+            const elementTypes = [AreaType.GOLD, AreaType.WOOD, AreaType.WATER, AreaType.FIRE, AreaType.EARTH];
+            
+            // 每个元素类型生成3个区域
+            for (let i = 0; i < elements.length; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let placed = false;
+                    while (!placed) {
+                        const x = Math.floor(Math.random() * BOARD_SIZE);
+                        const y = Math.floor(Math.random() * BOARD_SIZE);
+                        if (areas[x][y] === AreaType.NORMAL) {
+                            areas[x][y] = elementTypes[i];
+                            placed = true;
+                        }
+                    }
+                }
+            }
+            
+            return areas;
+        }
+        
+        // 获取棋子最大生命值
+        function getPieceMaxHealth(piece) {
+            const baseHealth = {
+                [PieceType.OUTER_DISCIPLE]: 40,
+                [PieceType.INNER_DISCIPLE]: 60,
+                [PieceType.TRUE_DISCIPLE]: 80,
+                [PieceType.ELDER]: 100,
+                [PieceType.LEADER]: 120
+            };
+            
+            return baseHealth[piece.type] + piece.level * 15;
+        }
+        
+        // 获取棋子战力
+        function getPiecePower(piece) {
+            const basePowers = {
+                [PieceType.OUTER_DISCIPLE]: 8,
+                [PieceType.INNER_DISCIPLE]: 12,
+                [PieceType.TRUE_DISCIPLE]: 16,
+                [PieceType.ELDER]: 20,
+                [PieceType.LEADER]: 25
+            };
+            
+            return basePowers[piece.type] + piece.level * 4;
+        }
+        
+        // 初始化棋子
+        function initializePieces() {
+            const pieces = [];
+            const elements = ['金', '木', '水', '火', '土'];
+            
+            // 获取随机五行属性
+            function getRandomElement() {
+                return elements[Math.floor(Math.random() * elements.length)];
+            }
+            
+            // 玩家1棋子 (底部)
+            pieces.push({ 
+                type: PieceType.LEADER, 
+                player: 1, 
+                level: 4, 
+                x: 4, y: 8, 
+                attribute: getRandomElement(),
+                health: getPieceMaxHealth({ type: PieceType.LEADER, level: 4 })
+            });
+            
+            // 添加其他棋子...
+            for (let i = 0; i < 2; i++) {
+                pieces.push({ 
+                    type: PieceType.ELDER, 
+                    player: 1, 
+                    level: 3, 
+                    x: i === 0 ? 3 : 5, 
+                    y: 8, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.ELDER, level: 3 })
+                });
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                pieces.push({ 
+                    type: PieceType.TRUE_DISCIPLE, 
+                    player: 1, 
+                    level: 2, 
+                    x: [2, 6, 4][i], 
+                    y: [8, 8, 7][i], 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.TRUE_DISCIPLE, level: 2 })
+                });
+            }
+            
+            [0, 2, 4, 6, 8].forEach(x => {
+                pieces.push({ 
+                    type: PieceType.INNER_DISCIPLE, 
+                    player: 1, 
+                    level: 1, 
+                    x, y: 7, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.INNER_DISCIPLE, level: 1 })
+                });
+            });
+            
+            [1, 3, 5, 7].forEach(x => {
+                pieces.push({ 
+                    type: PieceType.OUTER_DISCIPLE, 
+                    player: 1, 
+                    level: 0, 
+                    x, y: 8, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.OUTER_DISCIPLE, level: 0 })
+                });
+            });
+            
+            // 玩家2棋子 (顶部)
+            pieces.push({ 
+                type: PieceType.LEADER, 
+                player: 2, 
+                level: 4, 
+                x: 4, y: 0, 
+                attribute: getRandomElement(),
+                health: getPieceMaxHealth({ type: PieceType.LEADER, level: 4 })
+            });
+            
+            for (let i = 0; i < 2; i++) {
+                pieces.push({ 
+                    type: PieceType.ELDER, 
+                    player: 2, 
+                    level: 3, 
+                    x: i === 0 ? 3 : 5, 
+                    y: 0, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.ELDER, level: 3 })
+                });
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                pieces.push({ 
+                    type: PieceType.TRUE_DISCIPLE, 
+                    player: 2, 
+                    level: 2, 
+                    x: [2, 6, 4][i], 
+                    y: [0, 0, 1][i], 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.TRUE_DISCIPLE, level: 2 })
+                });
+            }
+            
+            [0, 2, 4, 6, 8].forEach(x => {
+                pieces.push({ 
+                    type: PieceType.INNER_DISCIPLE, 
+                    player: 2, 
+                    level: 1, 
+                    x, y: 1, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.INNER_DISCIPLE, level: 1 })
+                });
+            });
+            
+            [1, 3, 5, 7].forEach(x => {
+                pieces.push({ 
+                    type: PieceType.OUTER_DISCIPLE, 
+                    player: 2, 
+                    level: 0, 
+                    x, y: 0, 
+                    attribute: getRandomElement(),
+                    health: getPieceMaxHealth({ type: PieceType.OUTER_DISCIPLE, level: 0 })
+                });
+            });
+            
+            return pieces;
+        }
+        
+        // 绘制棋盘
+        function drawBoard(areas) {
+            // 绘制棋盘背景
+            ctx.fillStyle = COLORS.BACKGROUND;
+            ctx.fillRect(BOARD_PADDING_X, BOARD_PADDING_Y, CELL_SIZE * BOARD_SIZE, CELL_SIZE * BOARD_SIZE);
+            
+            // 绘制格子
+            for (let x = 0; x < BOARD_SIZE; x++) {
+                for (let y = 0; y < BOARD_SIZE; y++) {
+                    const rectX = BOARD_PADDING_X + x * CELL_SIZE;
+                    const rectY = BOARD_PADDING_Y + y * CELL_SIZE;
+                    
+                    // 绘制区域背景
+                    switch (areas[x][y]) {
+                        case AreaType.GOLD:
+                            ctx.fillStyle = COLORS.GOLD;
+                            break;
+                        case AreaType.WOOD:
+                            ctx.fillStyle = COLORS.WOOD;
+                            break;
+                        case AreaType.WATER:
+                            ctx.fillStyle = COLORS.WATER;
+                            break;
+                        case AreaType.FIRE:
+                            ctx.fillStyle = COLORS.FIRE;
+                            break;
+                        case AreaType.EARTH:
+                            ctx.fillStyle = COLORS.EARTH;
+                            break;
+                        case AreaType.TAIJI:
+                            ctx.fillStyle = COLORS.TAIJI;
+                            break;
+                        case AreaType.NODE:
+                            ctx.fillStyle = COLORS.NODE;
+                            break;
+                        default:
+                            ctx.fillStyle = 'rgba(30, 30, 60, 0.5)';
+                    }
+                    
+                    ctx.fillRect(rectX, rectY, CELL_SIZE, CELL_SIZE);
+                    
+                    // 特殊区域标记
+                    if (areas[x][y] === AreaType.TAIJI) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(rectX + CELL_SIZE/2, rectY + CELL_SIZE/2, CELL_SIZE/3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (areas[x][y] === AreaType.NODE) {
+                        ctx.strokeStyle = 'rgba(200, 200, 255, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(rectX + CELL_SIZE/2, rectY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    
+                    // 绘制网格
+                    ctx.strokeStyle = COLORS.GRID;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(rectX, rectY, CELL_SIZE, CELL_SIZE);
+                }
+            }
+        }
+        
+        // 绘制棋子
+        function drawPieces(pieces, selectedPiece, validMoves) {
+            pieces.forEach(piece => {
+                const centerX = BOARD_PADDING_X + piece.x * CELL_SIZE + CELL_SIZE/2;
+                const centerY = BOARD_PADDING_Y + piece.y * CELL_SIZE + CELL_SIZE/2;
+                const radius = CELL_SIZE * 0.4;
+                
+                // 绘制棋子背景
+                ctx.fillStyle = piece.player === 1 ? COLORS.PLAYER1 : COLORS.PLAYER2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制棋子边框
+                ctx.strokeStyle = '#222';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 绘制棋子符号
+                ctx.fillStyle = 'white';
+                ctx.font = `${CELL_SIZE * 0.4}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(PIECE_SYMBOLS[piece.type], centerX, centerY);
+                
+                // 绘制境界
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.9)';
+                ctx.font = `${CELL_SIZE * 0.2}px Arial`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(CULTIVATION_LEVELS[piece.level], 
+                    BOARD_PADDING_X + piece.x * CELL_SIZE + 5, 
+                    BOARD_PADDING_Y + piece.y * CELL_SIZE + 5);
+                
+                // 绘制五行属性
+                ctx.fillStyle = getElementColor(piece.attribute);
+                ctx.textAlign = 'right';
+                ctx.fillText(piece.attribute, 
+                    BOARD_PADDING_X + (piece.x + 1) * CELL_SIZE - 5, 
+                    BOARD_PADDING_Y + piece.y * CELL_SIZE + 5);
+                
+                // 绘制生命条
+                const maxHealth = getPieceMaxHealth(piece);
+                const healthRatio = piece.health / maxHealth;
+                const barWidth = CELL_SIZE * 0.8;
+                const barHeight = CELL_SIZE * 0.07;
+                const barX = BOARD_PADDING_X + piece.x * CELL_SIZE + CELL_SIZE * 0.1;
+                const barY = BOARD_PADDING_Y + (piece.y + 1) * CELL_SIZE - CELL_SIZE * 0.15;
+                
+                // 背景
+                ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                // 生命值
+                ctx.fillStyle = healthRatio > 0.6 ? '#0a0' : healthRatio > 0.3 ? '#fa0' : '#f00';
+                ctx.fillRect(barX, barY, barWidth * healthRatio, barHeight);
+                
+                // 边框
+                ctx.strokeStyle = '#222';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(barX, barY, barWidth, barHeight);
+                
+                // 绘制战力
+                const power = getPiecePower(piece);
+                ctx.fillStyle = '#ff0';
+                ctx.font = `${CELL_SIZE * 0.2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(power.toString(), centerX, barY - 3);
+            });
+            
+            // 绘制选中棋子高亮
+            if (selectedPiece) {
+                const rectX = BOARD_PADDING_X + selectedPiece.x * CELL_SIZE;
+                const rectY = BOARD_PADDING_Y + selectedPiece.y * CELL_SIZE;
+                
+                ctx.strokeStyle = COLORS.HIGHLIGHT;
+                ctx.lineWidth = 4;
+                ctx.strokeRect(rectX, rectY, CELL_SIZE, CELL_SIZE);
+            }
+            
+            // 绘制有效移动位置
+            if (validMoves && validMoves.length > 0) {
+                validMoves.forEach(({x, y, isAttack}) => {
+                    const rectX = BOARD_PADDING_X + x * CELL_SIZE;
+                    const rectY = BOARD_PADDING_Y + y * CELL_SIZE;
+                    
+                    ctx.fillStyle = isAttack ? COLORS.ATTACK_MOVE : COLORS.VALID_MOVE;
+                    ctx.fillRect(rectX, rectY, CELL_SIZE, CELL_SIZE);
+                    
+                    // 绘制移动类型标记
+                    ctx.fillStyle = isAttack ? '#f00' : '#0f0';
+                    ctx.font = `${CELL_SIZE * 0.3}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(isAttack ? '攻' : '移', rectX + CELL_SIZE/2, rectY + CELL_SIZE/2);
+                });
+            }
+        }
+        
+        // 获取五行颜色
+        function getElementColor(element) {
+            switch(element) {
+                case '金': return '#ffd700';
+                case '木': return '#32cd32';
+                case '水': return '#1e90ff';
+                case '火': return '#ff4500';
+                case '土': return '#cd853f';
+                default: return '#aaa';
+            }
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            gameState.areas = generateBoardAreas();
+            gameState.pieces = initializePieces();
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            gameState.currentPlayer = 1;
+            gameState.spiritEnergy = {1: 5, 2: 5};
+            gameState.controlledNodes = {1: 0, 2: 0};
+            gameState.turnCount = 1;
+            gameState.playerMoved = false;
+            gameState.gameOver = false;
+            gameState.winner = null;
+            
+            // 初始化控制节点
+            updateControlledNodes();
+            
+            drawGame();
+            updateInfoPanel();
+            showMessage("游戏开始！玩家1回合");
+        }
+        
+        // 更新控制节点
+        function updateControlledNodes() {
+            gameState.controlledNodes = {1: 0, 2: 0};
+            
+            // 找到所有节点位置
+            const nodePositions = [];
+            for (let x = 0; x < BOARD_SIZE; x++) {
+                for (let y = 0; y < BOARD_SIZE; y++) {
+                    if (gameState.areas[x][y] === AreaType.NODE) {
+                        nodePositions.push({x, y});
+                    }
+                }
+            }
+            
+            // 统计每个玩家控制的节点
+            nodePositions.forEach(pos => {
+                const piece = gameState.pieces.find(p => p.x === pos.x && p.y === pos.y);
+                if (piece) {
+                    gameState.controlledNodes[piece.player]++;
+                }
+            });
+        }
+        
+        // 计算有效移动
+        function calculateValidMoves(piece) {
+            if (gameState.playerMoved) return [];
+            
+            const moves = [];
+            const moveRange = piece.type === PieceType.ELDER ? 3 : 2;
+            
+            for (let dx = -moveRange; dx <= moveRange; dx++) {
+                for (let dy = -moveRange; dy <= moveRange; dy++) {
+                    const newX = piece.x + dx;
+                    const newY = piece.y + dy;
+                    
+                    // 检查是否在棋盘范围内
+                    if (newX < 0 || newX >= BOARD_SIZE || newY < 0 || newY >= BOARD_SIZE) {
+                        continue;
+                    }
+                    
+                    // 检查移动是否合法
+                    if (isValidMove(piece, piece.x, piece.y, newX, newY)) {
+                        // 检查目标位置是否有棋子
+                        const targetPiece = gameState.pieces.find(p => p.x === newX && p.y === newY);
+                        
+                        if (targetPiece) {
+                            // 如果是敌方棋子，标记为攻击
+                            if (targetPiece.player !== piece.player) {
+                                moves.push({x: newX, y: newY, isAttack: true});
+                            }
+                        } else {
+                            // 空位置，标记为移动
+                            moves.push({x: newX, y: newY, isAttack: false});
+                        }
+                    }
+                }
+            }
+            
+            return moves;
+        }
+        
+        // 检查移动是否合法
+        function isValidMove(piece, fromX, fromY, toX, toY) {
+            const dx = Math.abs(toX - fromX);
+            const dy = Math.abs(toY - fromY);
+            
+            // 不能原地不动
+            if (dx === 0 && dy === 0) return false;
+            
+            switch(piece.type) {
+                case PieceType.LEADER:
+                    // 八方1格
+                    return Math.max(dx, dy) === 1;
+                case PieceType.ELDER:
+                    // 直线或马步
+                    return (dx === 0 && dy > 0) || (dy === 0 && dx > 0) || 
+                           (dx === 1 && dy === 2) || (dx === 2 && dy === 1);
+                case PieceType.TRUE_DISCIPLE:
+                    // 斜线或士步
+                    return (dx === dy) || (dx <= 1 && dy <= 1);
+                case PieceType.INNER_DISCIPLE:
+                    // 横竖1格
+                    return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
+                case PieceType.OUTER_DISCIPLE:
+                    // 斜1格
+                    return dx === 1 && dy === 1;
+                default:
+                    return false;
+            }
+        }
+        
+        // 执行攻击
+        function performAttack(attacker, target) {
+            const attackerPower = getPiecePower(attacker);
+            const targetPower = getPiecePower(target);
+            
+            // 五行相克加成
+            let elementBonus = 0;
+            if (ELEMENT_CYCLE[attacker.attribute] === target.attribute) {
+                elementBonus = attackerPower * 0.5; // 相克加成50%
+            }
+            
+            const totalDamage = Math.max(1, attackerPower + elementBonus - targetPower / 2);
+            
+            // 应用伤害
+            target.health -= totalDamage;
+            
+            // 显示战斗信息
+            showMessage(`${PIECE_NAMES[attacker.type]}(${attacker.attribute}) 攻击 ${PIECE_NAMES[target.type]}(${target.attribute}) 造成 ${Math.round(totalDamage)} 伤害`);
+            
+            // 检查目标是否被击败
+            if (target.health <= 0) {
+                // 从棋盘移除被击败的棋子
+                gameState.pieces = gameState.pieces.filter(p => p !== target);
+                showMessage(`${PIECE_NAMES[target.type]}被击败！`);
+                
+                // 检查是否击败掌门
+                if (target.type === PieceType.LEADER) {
+                    gameState.gameOver = true;
+                    gameState.winner = attacker.player;
+                    showMessage(`玩家${attacker.player}斩首敌方掌门获胜！`, 5000);
+                }
+                
+                // 吞噬升级
+                if (Math.random() < 0.3 && attacker.level < 4) {
+                    attacker.level++;
+                    const newMaxHealth = getPieceMaxHealth(attacker);
+                    const healthIncrease = newMaxHealth - getPieceMaxHealth({type: attacker.type, level: attacker.level - 1});
+                    attacker.health += healthIncrease;
+                    showMessage(`${PIECE_NAMES[attacker.type]}吞噬敌人晋级${CULTIVATION_LEVELS[attacker.level]}！`);
+                }
+            }
+            
+            // 移动攻击者到目标位置
+            attacker.x = target.x;
+            attacker.y = target.y;
+            
+            // 标记玩家已移动
+            gameState.playerMoved = true;
+        }
+        
+        // 绘制游戏
+        function drawGame() {
+            drawBoard(gameState.areas);
+            drawPieces(gameState.pieces, gameState.selectedPiece, gameState.validMoves);
+        }
+        
+        // 结束当前回合
+        function endTurn() {
+            if (gameState.gameOver) return;
+            
+            // 切换到另一玩家
+            gameState.currentPlayer = gameState.currentPlayer === 1 ? 2 : 1;
+            gameState.playerMoved = false;
+            
+            // 清除选择
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            
+            // 增加回合数
+            if (gameState.currentPlayer === 1) {
+                gameState.turnCount++;
+            }
+            
+            // 更新灵能（每回合增加）
+            gameState.spiritEnergy[gameState.currentPlayer] += gameState.controlledNodes[gameState.currentPlayer];
+            
+            // 更新信息
+            drawGame();
+            updateInfoPanel();
+            showMessage(`玩家${gameState.currentPlayer}回合开始`);
+        }
+        
+        // 添加点击事件
+        canvas.addEventListener('click', (event) => {
+            if (gameState.gameOver) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // 计算点击的棋盘坐标
+            const boardX = Math.floor((x - BOARD_PADDING_X) / CELL_SIZE);
+            const boardY = Math.floor((y - BOARD_PADDING_Y) / CELL_SIZE);
+            
+            // 检查是否在棋盘范围内
+            if (boardX < 0 || boardX >= BOARD_SIZE || boardY < 0 || boardY >= BOARD_SIZE) {
+                gameState.selectedPiece = null;
+                gameState.validMoves = [];
+                drawGame();
+                updateInfoPanel();
+                return;
+            }
+            
+            // 查找点击的棋子
+            const clickedPiece = gameState.pieces.find(p => p.x === boardX && p.y === boardY);
+            
+            // 如果已经选择了棋子
+            if (gameState.selectedPiece) {
+                // 检查是否是有效移动
+                const move = gameState.validMoves.find(m => m.x === boardX && m.y === boardY);
+                
+                if (move) {
+                    if (move.isAttack) {
+                        // 攻击逻辑
+                        const targetPiece = gameState.pieces.find(p => p.x === boardX && p.y === boardY);
+                        if (targetPiece) {
+                            performAttack(gameState.selectedPiece, targetPiece);
+                        }
+                    } else {
+                        // 移动逻辑
+                        gameState.selectedPiece.x = boardX;
+                        gameState.selectedPiece.y = boardY;
+                        gameState.playerMoved = true;
+                        showMessage(`${PIECE_NAMES[gameState.selectedPiece.type]}移动到(${boardX}, ${boardY})`);
+                    }
+                    
+                    // 清除选择
+                    gameState.selectedPiece = null;
+                    gameState.validMoves = [];
+                } else if (clickedPiece && clickedPiece.player === gameState.currentPlayer) {
+                    // 选择另一个棋子
+                    gameState.selectedPiece = clickedPiece;
+                    gameState.validMoves = calculateValidMoves(clickedPiece);
+                } else {
+                    // 清除选择
+                    gameState.selectedPiece = null;
+                    gameState.validMoves = [];
+                }
+            } else if (clickedPiece && clickedPiece.player === gameState.currentPlayer) {
+                // 选择棋子
+                gameState.selectedPiece = clickedPiece;
+                gameState.validMoves = calculateValidMoves(clickedPiece);
+            }
+            
+            // 重绘游戏
+            drawGame();
+            updateInfoPanel();
+        });
+        
+        // 结束回合按钮
+        document.getElementById('end-turn').addEventListener('click', endTurn);
+        
+        // 秘术按钮
+        document.getElementById('tech1').addEventListener('click', () => {
+            if (gameState.spiritEnergy[gameState.currentPlayer] >= 3) {
+                gameState.spiritEnergy[gameState.currentPlayer] -= 3;
+                showMessage("施展缩地成寸秘术！");
+                updateInfoPanel();
+            } else {
+                showMessage("灵能不足，无法施展秘术！");
+            }
+        });
+        
+        document.getElementById('tech2').addEventListener('click', () => {
+            if (gameState.spiritEnergy[gameState.currentPlayer] >= 5) {
+                gameState.spiritEnergy[gameState.currentPlayer] -= 5;
+                showMessage("施展元神出窍秘术！");
+                updateInfoPanel();
+            } else {
+                showMessage("灵能不足，无法施展秘术！");
+            }
+        });
+        
+        document.getElementById('tech3').addEventListener('click', () => {
+            if (gameState.spiritEnergy[gameState.currentPlayer] >= 1) {
+                gameState.spiritEnergy[gameState.currentPlayer] -= 1;
+                showMessage("施展天魔解体秘术！");
+                updateInfoPanel();
+            } else {
+                showMessage("灵能不足，无法施展秘术！");
+            }
+        });
+        
+        // 初始化游戏
+        initGame();
+    </script>
+</body>
+</html>
